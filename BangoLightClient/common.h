@@ -3,6 +3,14 @@
 
 #pragma once
 
+#ifndef WIN32
+#define SOCKET void*
+#include <inttypes.h>
+#include "minwindef.h"
+#define __stdcall
+#endif
+
+
 static __int64 g_nNeedExp[] = {
 	0, 5, 24, 60, 160,
 		328, 542, 814, 1157, 1588,

@@ -17,20 +17,22 @@
 #include "MainProtocol.h"
 #include "common.h"
 
+
+#include <stdarg.h>
+#include <string.h>
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <stdio.h>
+#include <fstream>
+#include <sstream>
+
 #pragma comment (lib, "Ws2_32.lib")
 
 #define MAX_PACKET_LENGTH	8000
 
 #pragma pack (push, 1)
 
-
-#ifndef WIN32
-#define SOCKET void*
-typedef unsigned char  BYTE;
-typedef unsigned short  WORD;
-typedef unsigned long  DWORD;
-#define __stdcall
-#endif
 
 class KSocket
 {

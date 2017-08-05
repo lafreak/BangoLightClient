@@ -1,7 +1,17 @@
+#ifdef _MSC_VER // Windows
+#include <windows.h>
+#include <direct.h>
 #include <process.h>
-#include <math.h>
+#else // Linux
+#include <unistd.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+#endif /*_MSC_VER*/
 
+#include <math.h>
+#include <memory.h>
 #include "KSocket.h"
+
 
 SOCKET KSocket::g_pSocket = INVALID_SOCKET;
 
