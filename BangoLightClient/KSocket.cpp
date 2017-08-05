@@ -19,18 +19,27 @@ SOCKET KSocket::g_pSocket = INVALID_SOCKET;
 
 bool KSocket::Connect(std::string szHostname, WORD wPort)
 {
+
+#ifdef _MSC_VER // Windows
 	WSADATA wsaData;
 	if (WSAStartup(MAKEWORD(2, 2), &wsaData) != NO_ERROR)
 	{
 		printf("Initialization error.\n");
 		return false;
 	}
+#endif /*_MSC_VER*/
 
 	KSocket::g_pSocket = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
+
 	if (KSocket::g_pSocket == INVALID_SOCKET)
 	{
+
+#ifdef _MSC_VER // Windows
 		printf("Error creating socket: %ld\n", WSAGetLastError());
 		WSACleanup();
+#else
+		printf("Error creating socket.\n");
+#endif
 		return false;
 	}
 
@@ -41,10 +50,12 @@ bool KSocket::Connect(std::string szHostname, WORD wPort)
 	service.sin_addr.s_addr = inet_addr(szHostname.c_str());
 	service.sin_port = htons(wPort);
 
-	if (connect(KSocket::g_pSocket, (SOCKADDR*)&service, sizeof(service)) == SOCKET_ERROR)
+	if (connect(KSocket::g_pSocket, (struct sockaddr *) &service, sizeof(service)) == SOCKET_ERROR)
 	{
 		printf("Failed to connect.\n");
+#ifdef _MSC_VER // Windows
 		WSACleanup();
+#endif /*_MSC_VER*/
 		return false;
 	}
 
@@ -59,10 +70,18 @@ bool KSocket::Connect(std::string szHostname, WORD wPort)
 
 bool KSocket::Disconnect()
 {
-	if (KSocket::g_pSocket != INVALID_SOCKET)
+	if (KSocket::g_pSocket != INVALID_SOCKET) {
+#ifdef _MSC_VER // Windows
 		closesocket(KSocket::g_pSocket);
+#else
+		close(KSocket::g_pSocket);
+#endif
 	
+	}
+	
+#ifdef _MSC_VER // Windows
 	WSACleanup();
+#endif /*_MSC_VER*/
 
 	return true;
 }
@@ -213,7 +232,12 @@ unsigned KSocket::AwaitPacket(void* param)
 		if (nLen <= 0)
 		{
 			printf("Server disconnected.\n");
-			closesocket(KSocket::g_pSocket);
+#ifdef _MSC_VER // Windows
+		closesocket(KSocket::g_pSocket);
+#else
+		close(KSocket::g_pSocket);
+#endif
+
 			break;
 		}
 
