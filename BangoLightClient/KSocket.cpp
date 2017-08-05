@@ -10,6 +10,8 @@
 
 #include <math.h>
 #include <memory.h>
+#include <chrono>
+#include <thread>
 #include "KSocket.h"
 
 
@@ -411,7 +413,7 @@ void KSocket::Process(Packet& packet)
 
 unsigned KSocket::RunThread(void* param)
 {
-	Sleep(2000);
+	std::this_thread::sleep_for(std::chrono::milliseconds(2000));
 	printf("Running loop has been started.\n");
 
 	while (true)
@@ -421,7 +423,7 @@ unsigned KSocket::RunThread(void* param)
 
 		int nDist = sqrt(pow(nStepX, 2) + pow(nStepY, 2));
 
-		Sleep(nDist * 18);
+		std::this_thread::sleep_for(std::chrono::milliseconds(nDist * 18));
 		char byX = nStepX;
 		char byY = nStepY;
 		WritePacket(C2S_MOVE_ON, "bbb", byX, byY, 0);
