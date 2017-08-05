@@ -48,7 +48,11 @@ bool KSocket::Connect(std::string szHostname, WORD wPort)
 		return false;
 	}
 
-	_beginthreadex(0, 0, &KSocket::AwaitPacket, 0, 0, 0);
+	// _beginthreadex(0, 0, &KSocket::AwaitPacket, 0, 0, 0);
+	
+	// pthread_t t;
+	// pthread_create(&t, NULL, &KSocket::AwaitPacket, 0); ???
+	std::thread t(&KSocket::AwaitPacket);
 
 	return true;
 }
@@ -354,7 +358,7 @@ void KSocket::Process(Packet& packet)
 			// Shortcut load
 			WritePacket(C2S_SHORTCUT, "b", 0);
 
-			_beginthreadex(0, 0, &KSocket::RunThread, 0, 0, 0);
+			std::thread t(&KSocket::RunThread);
 
 			break;
 		}
