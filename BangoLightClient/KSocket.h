@@ -1,5 +1,16 @@
+#ifdef _MSC_VER // Windows
 #include <windows.h>
 #include <winsock.h>
+#else // Linux
+#include <unistd.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
+#endif /*_MSC_VER*/
+
 #include <string>
 #include <time.h>
 
@@ -11,6 +22,15 @@
 #define MAX_PACKET_LENGTH	8000
 
 #pragma pack (push, 1)
+
+
+#ifndef WIN32
+#define SOCKET void*
+typedef unsigned char  BYTE;
+typedef unsigned short  WORD;
+typedef unsigned long  DWORD;
+#define __stdcall
+#endif
 
 class KSocket
 {
