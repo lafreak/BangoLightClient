@@ -4,7 +4,6 @@
 #pragma once
 
 #ifndef WIN32
-#define SOCKET void*
 #include <inttypes.h>
 #include "minwindef.h"
 #define __stdcall

@@ -7,12 +7,11 @@ typedef int                 BOOL;
 typedef unsigned char       BYTE;
 typedef unsigned short      WORD;
 typedef float               FLOAT;
-
 typedef int                 INT;
 typedef unsigned int        UINT;
 typedef unsigned int        *PUINT;
+typedef int                 SOCKET;
 
-typedef int SOCKET;
 
 typedef void *PVOID;
 

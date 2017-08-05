@@ -12,6 +12,7 @@
 #include <memory.h>
 #include <chrono>
 #include <thread>
+#include <pthread.h>
 #include "KSocket.h"
 
 
@@ -59,11 +60,12 @@ bool KSocket::Connect(std::string szHostname, WORD wPort)
 		return false;
 	}
 
-	// _beginthreadex(0, 0, &KSocket::AwaitPacket, 0, 0, 0);
-	
-	// pthread_t t;
-	// pthread_create(&t, NULL, &KSocket::AwaitPacket, 0); ???
-	std::thread t(&KSocket::AwaitPacket);
+#ifdef _MSC_VER // Windows
+	_beginthreadex(0, 0, &KSocket::AwaitPacket, 0, 0, 0);
+#else	
+	pthread_t t;
+	pthread_create(&t, NULL, KSocket::AwaitPacket, NULL);
+#endif /*_MSC_VER*/
 
 	return true;
 }
@@ -382,7 +384,12 @@ void KSocket::Process(Packet& packet)
 			// Shortcut load
 			WritePacket(C2S_SHORTCUT, "b", 0);
 
-			std::thread t(&KSocket::RunThread);
+#ifdef _MSC_VER // Windows
+			_beginthreadex(0, 0, &KSocket::RunThread, 0, 0, 0);
+#else
+			pthread_t t;
+			pthread_create(&t, NULL, KSocket::RunThread, NULL);
+#endif
 
 			break;
 		}
