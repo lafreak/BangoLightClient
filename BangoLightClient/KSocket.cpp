@@ -22,11 +22,19 @@ bool KSocket::Connect(std::string szHostname, WORD wPort)
 		return false;
 	}
 
+	struct hostent *he;
+	if ((he = gethostbyname(szHostname.c_str())) == NULL) {
+		printf("Could not resolve hostname %s.\n", szHostname.c_str());
+		WSACleanup();
+		return false;
+	}
+
 	sockaddr_in service;
 	memset(&service, 0, sizeof(service));
 
 	service.sin_family = AF_INET;
-	service.sin_addr.s_addr = inet_addr(szHostname.c_str());
+	memcpy(&service.sin_addr, he->h_addr_list[0], he->h_length);
+	//service.sin_addr.s_addr = inet_addr(szHostname.c_str());
 	service.sin_port = htons(wPort);
 
 	if (connect(KSocket::g_pSocket, (SOCKADDR*)&service, sizeof(service)) == SOCKET_ERROR)
