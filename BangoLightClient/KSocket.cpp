@@ -6,6 +6,7 @@
 #include <unistd.h>
 #include <sys/stat.h>
 #include <sys/types.h>
+#include <netdb.h>
 #endif /*_MSC_VER*/
 
 #include <math.h>
@@ -44,11 +45,17 @@ bool KSocket::Connect(std::string szHostname, WORD wPort)
 		return false;
 	}
 
+	struct hostent *he;
+	if ((he = gethostbyname(szHostname.c_str())) == NULL) {
+		printf("Could not resolve hostname %s.\n", szHostname.c_str());
+		return false;
+	}
+
 	sockaddr_in service;
 	memset(&service, 0, sizeof(service));
 
 	service.sin_family = AF_INET;
-	service.sin_addr.s_addr = inet_addr(szHostname.c_str());
+	memcpy(&service.sin_addr, he->h_addr_list[0], he->h_length);
 	service.sin_port = htons(wPort);
 
 	if (connect(KSocket::g_pSocket, (struct sockaddr *) &service, sizeof(service)) == SOCKET_ERROR)
@@ -200,11 +207,11 @@ char* KSocket::ReadPacket(char* packet, const char* format, ...)
 			break;
 		case 's':
 			{
-                // ������ �ּҸ� �����Ѵ�.
+                // ďż˝ďż˝ďż˝ďż˝ďż˝ďż˝ ďż˝ÖĽŇ¸ďż˝ ďż˝ďż˝ďż˝ďż˝ďż˝Ń´ďż˝.
                 char *text = *va_arg(va, char**) = packet;
                 //packet += sizeof(char*);
 
-                // ���ڴ� ����ش�.
+                // ďż˝ďż˝ďż˝Ú´ďż˝ ďż˝ďż˝ďż˝ďż˝Ř´ďż˝.
                 while (*packet++) {}
             }
             break;
