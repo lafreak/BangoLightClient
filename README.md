@@ -5,8 +5,18 @@ When somebody asks of party - it instantly accepts it.
 Can be extended to do more things.
 
 ### How to use
+
+**Windows**
+
 Compile using Visual Studio.  
 Run ``BangoLightClient.exe <ip> <port> <login> <password>``
+
+**Linux**
+
+```
+make
+./bango  <ip> <port> <login> <password>
+```
 
 ### Example
 Simple batch script to run 90 clients in 1 seconds interval:
