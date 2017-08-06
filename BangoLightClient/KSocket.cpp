@@ -51,10 +51,11 @@ bool KSocket::Connect(std::string szHostname, WORD wPort)
 		return false;
 	}
 
-	struct hostent *he;
 	if ((he = gethostbyname(szHostname.c_str())) == NULL) {
 		printf("Could not resolve hostname %s.\n", szHostname.c_str());
+#ifdef _MSC_VER // Windows
 		WSACleanup();
+#endif
 		return false;
 	}
 
