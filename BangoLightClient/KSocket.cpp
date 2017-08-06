@@ -7,15 +7,15 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <netdb.h>
+#include <pthread.h>
 #endif /*_MSC_VER*/
 
 #include <math.h>
 #include <memory.h>
 #include <chrono>
 #include <thread>
-#include <pthread.h>
-#include "KSocket.h"
 
+#include "KSocket.h"
 
 SOCKET KSocket::g_pSocket = INVALID_SOCKET;
 
