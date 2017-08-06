@@ -1,5 +1,19 @@
+#ifdef _MSC_VER // Windows
+#include <windows.h>
+#include <direct.h>
 #include <process.h>
+#else // Linux
+#include <unistd.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <netdb.h>
+#include <pthread.h>
+#endif /*_MSC_VER*/
+
 #include <math.h>
+#include <memory.h>
+#include <chrono>
+#include <thread>
 
 #include "KSocket.h"
 
@@ -7,18 +21,33 @@ SOCKET KSocket::g_pSocket = INVALID_SOCKET;
 
 bool KSocket::Connect(std::string szHostname, WORD wPort)
 {
+
+#ifdef _MSC_VER // Windows
 	WSADATA wsaData;
 	if (WSAStartup(MAKEWORD(2, 2), &wsaData) != NO_ERROR)
 	{
 		printf("Initialization error.\n");
 		return false;
 	}
+#endif /*_MSC_VER*/
 
 	KSocket::g_pSocket = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
+
 	if (KSocket::g_pSocket == INVALID_SOCKET)
 	{
+
+#ifdef _MSC_VER // Windows
 		printf("Error creating socket: %ld\n", WSAGetLastError());
 		WSACleanup();
+#else
+		printf("Error creating socket.\n");
+#endif
+		return false;
+	}
+
+	struct hostent *he;
+	if ((he = gethostbyname(szHostname.c_str())) == NULL) {
+		printf("Could not resolve hostname %s.\n", szHostname.c_str());
 		return false;
 	}
 
@@ -34,27 +63,41 @@ bool KSocket::Connect(std::string szHostname, WORD wPort)
 
 	service.sin_family = AF_INET;
 	memcpy(&service.sin_addr, he->h_addr_list[0], he->h_length);
-	//service.sin_addr.s_addr = inet_addr(szHostname.c_str());
 	service.sin_port = htons(wPort);
 
-	if (connect(KSocket::g_pSocket, (SOCKADDR*)&service, sizeof(service)) == SOCKET_ERROR)
+	if (connect(KSocket::g_pSocket, (struct sockaddr *) &service, sizeof(service)) == SOCKET_ERROR)
 	{
 		printf("Failed to connect.\n");
+#ifdef _MSC_VER // Windows
 		WSACleanup();
+#endif /*_MSC_VER*/
 		return false;
 	}
 
+#ifdef _MSC_VER // Windows
 	_beginthreadex(0, 0, &KSocket::AwaitPacket, 0, 0, 0);
+#else	
+	pthread_t t;
+	pthread_create(&t, NULL, KSocket::AwaitPacket, NULL);
+#endif /*_MSC_VER*/
 
 	return true;
 }
 
 bool KSocket::Disconnect()
 {
-	if (KSocket::g_pSocket != INVALID_SOCKET)
+	if (KSocket::g_pSocket != INVALID_SOCKET) {
+#ifdef _MSC_VER // Windows
 		closesocket(KSocket::g_pSocket);
+#else
+		close(KSocket::g_pSocket);
+#endif
 	
+	}
+	
+#ifdef _MSC_VER // Windows
 	WSACleanup();
+#endif /*_MSC_VER*/
 
 	return true;
 }
@@ -171,11 +214,11 @@ char* KSocket::ReadPacket(char* packet, const char* format, ...)
 			break;
 		case 's':
 			{
-                // ������ �ּҸ� �����Ѵ�.
+                // ďż˝ďż˝ďż˝ďż˝ďż˝ďż˝ ďż˝ÖĽŇ¸ďż˝ ďż˝ďż˝ďż˝ďż˝ďż˝Ń´ďż˝.
                 char *text = *va_arg(va, char**) = packet;
                 //packet += sizeof(char*);
 
-                // ���ڴ� ����ش�.
+                // ďż˝ďż˝ďż˝Ú´ďż˝ ďż˝ďż˝ďż˝ďż˝Ř´ďż˝.
                 while (*packet++) {}
             }
             break;
@@ -205,7 +248,12 @@ unsigned KSocket::AwaitPacket(void* param)
 		if (nLen <= 0)
 		{
 			printf("Server disconnected.\n");
-			closesocket(KSocket::g_pSocket);
+#ifdef _MSC_VER // Windows
+		closesocket(KSocket::g_pSocket);
+#else
+		close(KSocket::g_pSocket);
+#endif
+
 			break;
 		}
 
@@ -350,7 +398,12 @@ void KSocket::Process(Packet& packet)
 			// Shortcut load
 			WritePacket(C2S_SHORTCUT, "b", 0);
 
+#ifdef _MSC_VER // Windows
 			_beginthreadex(0, 0, &KSocket::RunThread, 0, 0, 0);
+#else
+			pthread_t t;
+			pthread_create(&t, NULL, KSocket::RunThread, NULL);
+#endif
 
 			break;
 		}
@@ -409,7 +462,7 @@ void KSocket::Process(Packet& packet)
 
 unsigned KSocket::RunThread(void* param)
 {
-	Sleep(2000);
+	std::this_thread::sleep_for(std::chrono::milliseconds(2000));
 	printf("Running loop has been started.\n");
 
 	while (true)
@@ -419,7 +472,7 @@ unsigned KSocket::RunThread(void* param)
 
 		int nDist = sqrt(pow(nStepX, 2) + pow(nStepY, 2));
 
-		Sleep(nDist * 18);
+		std::this_thread::sleep_for(std::chrono::milliseconds(nDist * 18));
 		char byX = nStepX;
 		char byY = nStepY;
 		WritePacket(C2S_MOVE_ON, "bbb", byX, byY, 0);
