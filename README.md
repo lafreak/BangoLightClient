@@ -13,7 +13,7 @@ Simple batch script to run 90 clients in 1 seconds interval:
 ```
 @echo off & setlocal EnableDelayedExpansion
 
-for /l %%x in (10, 1, 11) do (
+for /l %%x in (10, 1, 100) do (
 	start BangoLightClient.exe 192.168.189.129 3000 bot%%x passwd
 	timeout 1
 )
