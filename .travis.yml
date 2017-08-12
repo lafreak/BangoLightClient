@@ -1,0 +1,10 @@
+language: cpp
+
+sudo: required
+dist: trusty
+
+compiler:
+    - g++
+
+script:
+    - make
